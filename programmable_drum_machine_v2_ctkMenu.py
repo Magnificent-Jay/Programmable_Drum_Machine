@@ -233,7 +233,6 @@ class DrumMachine:
 
 	def play_pattern(self):
 		self.now_playing = True
-		self.toggle_play_button_state()
 		while self.now_playing:
 			play_list = self.get_is_button_clicked_list()
 			num_columns = len(play_list[0])

@@ -85,8 +85,8 @@ class DrumMachine:
 	def set_drum_file_path(self, drum_index, file_path):
 	    self.get_list_of_drum_files()[drum_index] = file_path
 
-	def get_is_button_clicked_list(self):
-	    return self.get_current_pattern_dict()["is_button_clicked_list"]
+	def get_is_button_clicked_list(self): 
+		return self.get_current_pattern_dict()["is_button_clicked_list"]
 
 	def set_is_button_clicked_list(self, num_of_rows, num_of_columns):
 		self.get_current_pattern_dict()["is_button_clicked_list"] = [
