@@ -1,7 +1,15 @@
+"""
+Programmable drum machine
+
+The idea for this project was gotten from "Tkinter GUI Application Development Blueprints" by Bhaskar Chaudhary.
+The original project was done using tkinter. This version of the project using customtkinter was created by Jeremiah Adejo.
+"""
+
+
 import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
-import os, time, pygame, threading
+import os, time, pygame, threading, pickle
 from tkinter import filedialog
 
 
@@ -59,7 +67,7 @@ class DrumMachine:
 		self.init_gui()
 		self.root.protocol("WM_DELETE_WINDOW", self.exit_app)
 
-	 # ====== Getters and Setters ========
+	# ====== Getters and Setters ========
 
 	def get_current_pattern_dict(self):
 		return self.all_patterns[self.current_pattern_index]
@@ -78,20 +86,22 @@ class DrumMachine:
 
 	def get_list_of_drum_files(self):
 		return self.get_current_pattern_dict()["list_of_drum_files"]
-	
+
 	def get_drum_file_path(self, drum_index):
 		return self.get_list_of_drum_files()[drum_index]
 
 	def set_drum_file_path(self, drum_index, file_path):
 	    self.get_list_of_drum_files()[drum_index] = file_path
 
-	def get_is_button_clicked_list(self): 
+	def get_is_button_clicked_list(self):
 		return self.get_current_pattern_dict()["is_button_clicked_list"]
 
 	def set_is_button_clicked_list(self, num_of_rows, num_of_columns):
 		self.get_current_pattern_dict()["is_button_clicked_list"] = [
 			[False] * num_of_columns for x in range(num_of_rows)]
-			# ===== End of Setters and Getters ==========
+
+	# ===== End of Setters and Getters ==========
+
 
 	def init_all_patterns(self):
 		self.all_patterns = [
@@ -135,23 +145,54 @@ class DrumMachine:
 		self.start_play()
 
 	def on_number_of_units_changed(self):
-		old_columns = self.find_number_of_columns()
+		# Calculate old columns from current stored data
+		current_pattern = self.get_current_pattern_dict()
+		old_columns = len(current_pattern["is_button_clicked_list"][0])
+
+		# Update the stored value
 		self.set_number_of_units()
+
+		# Calculate new columns
 		new_columns = self.find_number_of_columns()
 
-		# Only reset if the size is actually changed
+		# Always update the list when size changes
 		if old_columns != new_columns:
-			self.set_is_button_clicked_list(MAX_NUMBER_OF_DRUM_SAMPLES, new_columns)
+			# Preserve existing data where possible
+			old_list = self.get_is_button_clicked_list()
+			new_list = [[False] * new_columns for _ in range(MAX_NUMBER_OF_DRUM_SAMPLES)]
+
+			# Copy existing values that fit in the new size
+			for row in range(MAX_NUMBER_OF_DRUM_SAMPLES):
+				for col in range(min(old_columns, new_columns)):
+					new_list[row][col] = old_list[row][col]
+
+			self.get_current_pattern_dict()["is_button_clicked_list"] = new_list
+
 		self.create_right_button_matrix()
 
 	def on_bpu_changed(self):
-		old_columns = self.find_number_of_columns()
+		# Calculate old columns from current stored data
+		current_pattern = self.get_current_pattern_dict()
+		old_columns = len(current_pattern["is_button_clicked_list"][0])
+
+		# Update the stored value
 		self.set_bpu()
+
+		# Calculate new columns
 		new_columns = self.find_number_of_columns()
 
 		# Only reset if the size is actually changed
 		if old_columns != new_columns:
-			self.set_is_button_clicked_list(MAX_NUMBER_OF_DRUM_SAMPLES, new_columns)
+			# Preserve existing data that fit in the new size
+			old_list = self.get_is_button_clicked_list()
+			new_list = [[False] * new_columns for _ in range(MAX_NUMBER_OF_DRUM_SAMPLES)]
+
+			# Copy existing data where possible
+			for row in range(MAX_NUMBER_OF_DRUM_SAMPLES):
+				for col in range(min(old_columns, new_columns)):
+					new_list[row][col] = old_list[row][col]
+
+			self.get_current_pattern_dict()["is_button_clicked_list"] = new_list
 		self.create_right_button_matrix()
 
 	# Loading the drum files
@@ -192,7 +233,6 @@ class DrumMachine:
 
 	def play_pattern(self):
 		self.now_playing = True
-		self.toggle_play_button_state()
 		while self.now_playing:
 			play_list = self.get_is_button_clicked_list()
 			num_columns = len(play_list[0])
@@ -300,6 +340,10 @@ class DrumMachine:
 		self.current_pattern_name_widget = ctk.CTkEntry(topbar_frame, fg_color="transparent")
 		self.current_pattern_name_widget.grid(row=0, column=3, padx=7, pady=2)
 
+		# Display the name
+		self.current_pattern_index = int(self.pattern_index_widget.get())
+		self.display_pattern_name()
+
 		# Number of Units section
 		ctk.CTkLabel(topbar_frame, text="Number of Units:").grid(row=0, column=4)
 		self.number_of_units_widget = MySpinbox(topbar_frame, root_bg = self.root.cget("bg"),
@@ -400,7 +444,58 @@ class DrumMachine:
 				self.buttons[row][col].grid(row=row, column=col, padx=1)
 				self.display_button_color(row, col)
 
+	def create_top_menu(self):
+		self.menu_bar = tk.Menu(self.root)
+
+		# File Menu
+		self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
+		self.file_menu.add_command(label="Load Project", command=self.load_project)
+		self.file_menu.add_command(label="Save Project", command=self.save_project)
+		self.file_menu.add_separator()
+		self.file_menu.add_command(label="Exit", command=self.exit_app)
+		self.menu_bar.add_cascade(label="File", menu=self.file_menu) # Add the file menu to the menu bar
+
+		# About Menu
+		self.about_menu = tk.Menu(self.menu_bar, tearoff=0)
+		self.about_menu.add_command(label="About", command=self.show_about)
+		self.menu_bar.add_cascade(label="About", menu=self.about_menu)
+		self.root.configure(menu=self.menu_bar)
+
+	def load_project(self):
+		file_path = filedialog.askopenfilename(filetypes=[("Explosion Beat File", "*.ebt")], title="Load Project")
+		if not file_path: return
+		pickled_file_object = open(file_path, "rb")
+
+		try:
+			self.all_patterns = pickle.load(pickled_file_object)
+		except EOFError:
+			messagebox.show_error("Error", "Explosion Beat file seems corrupted or invalid ❗")
+			pickled_file_object.close()
+
+		try:
+			self.change_pattern()
+			self.root.title(os.path.basename(file_path) + PROGRAM_NAME)
+		except:
+			messagebox.show_error("Error", "An unexpected error occured while trying to process the beat file")
+
+
+	def save_project(self):
+		saveas_file_name = filedialog.asksaveasfilename(filetypes=[("Explosion Beat File", "*.ebt")], title="Save Project as...")
+		if saveas_file_name is None: return
+		pickle.dump(self.all_patterns, open(saveas_file_name, "wb"))
+
+		self.root.title(os.path.basename(saveas_file_name) + PROGRAM_NAME)
+
+	def show_about(self):
+		about = """
+Programmable Drum Machine by Bhaskar Chaudhary.
+Reprogrammed with Customtkinter by Jeremiah Adejo.
+		"""
+		tk.messagebox.showinfo(PROGRAM_NAME, about)
+
+
 	def init_gui(self):
+		self.create_top_menu()
 		self.create_top_bar()
 		self.create_left_drum_loader()
 		self.create_right_button_matrix()

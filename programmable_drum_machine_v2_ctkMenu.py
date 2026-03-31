@@ -464,19 +464,20 @@ class DrumMachine:
 	def load_project(self):
 		file_path = filedialog.askopenfilename(filetypes=[("Explosion Beat File", "*.ebt")], title="Load Project")
 		if not file_path: return
+		
 		pickled_file_object = open(file_path, "rb")
 
 		try:
 			self.all_patterns = pickle.load(pickled_file_object)
 		except EOFError:
-			messagebox.show_error("Error", "Explosion Beat file seems corrupted or invalid ❗")
+			tk.messagebox.show_error("Error", "Explosion Beat file seems corrupted or invalid ❗")
 			pickled_file_object.close()
 
 		try:
 			self.change_pattern()
 			self.root.title(os.path.basename(file_path) + PROGRAM_NAME)
 		except:
-			messagebox.show_error("Error", "An unexpected error occured while trying to process the beat file")
+			tk.messagebox.show_error("Error", "An unexpected error occured while trying to process the beat file")
 
 
 	def save_project(self):
