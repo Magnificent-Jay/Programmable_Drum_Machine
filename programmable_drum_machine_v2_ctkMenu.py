@@ -278,7 +278,7 @@ class DrumMachine:
 		self.now_playing = False
 
 	def on_loop_button_toggled(self):
-		self.loop = bool(self.loopbutton.get())
+		self.loop = self.loopbuttonvar.get()
 		self.keep_playing = self.loop
 		if self.now_playing:
 			self.now_playing = self.loop
