@@ -9,7 +9,7 @@ The original project was done using tkinter. This version of the project using c
 import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
-import os, time, pygame, threading, pickle
+import os, time, pygame, threading, pickle, sys
 from tkinter import filedialog
 
 
@@ -27,6 +27,16 @@ COLOR_1 = 'grey50'
 COLOR_2 = 'khaki2'
 BUTTON_CLICKED_COLOR = '#98FF98'
 BTN_COLOR = "#5A7A5A"
+
+def resource_path(relative_path):
+	""" Get absolute path to resource, works for dev and for PyInstaller. This function is used for processing the paths of external paths before running them."""
+	try: 
+		# PyInstaller creates a temp folder and stores path in _MEIPASS
+		base_path = sys._MEIPASS
+	except Exception:
+		base_path = os.path.abspath(".")
+	
+	return os.path.join(base_path, relative_path)
 
 class MySpinbox(tk.Spinbox):
 	"""
@@ -369,15 +379,15 @@ class DrumMachine:
 		playbar_frame.grid(row=start_row, columnspan=13, sticky="we",
 			padx=15, pady=10)
 		self.play_icon = ctk.CTkImage(
-			light_image = Image.open("images/play_button.png"),
-			dark_image  = Image.open("images/play button.png"))
+			light_image = Image.open(resource_path("images/play_button.png")),
+			dark_image  = Image.open(resource_path("images/play button.png")))
 		self.stop_icon = ctk.CTkImage(
-			light_image=Image.open("images/stop_button.png"),
-			dark_image =Image.open("images/stop button.png"))
+			light_image=Image.open(resource_path("images/stop_button.png")),
+			dark_image =Image.open(resource_path("images/stop button.png")))
 		self.loop_icon = ctk.CTkImage(
-			light_image=Image.open("images/loop_button.png"),
-			dark_image =Image.open("images/loop button.png"))
-		self.photo = tk.PhotoImage(file="images/signature.gif")
+			light_image=Image.open(resource_path("images/loop_button.png")),
+			dark_image =Image.open(resource_path("images/loop button.png")))
+		self.photo = tk.PhotoImage(file=resource_path("images/signature.gif"))
 
 
 		# Play Button
@@ -419,8 +429,8 @@ class DrumMachine:
 		left_frame = ctk.CTkFrame(self.mainFrame, fg_color="transparent")
 		left_frame.grid(row=10, column=0, columnspan=6, sticky="news")
 		open_file_icon = ctk.CTkImage(
-			light_image=Image.open("images/openfile2.png"),
-			dark_image =Image.open("images/openfile2.png"))
+			light_image=Image.open(resource_path("images/openfile2.png")),
+			dark_image =Image.open(resource_path("images/openfile2.png")))
 		for i in range(MAX_NUMBER_OF_DRUM_SAMPLES):
 			open_file_button = ctk.CTkButton(left_frame, image=open_file_icon,
 				command=self.on_open_file_button_clicked(i), width=3, height=3, text="", fg_color="transparent")
