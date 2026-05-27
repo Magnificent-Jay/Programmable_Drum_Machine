@@ -339,7 +339,7 @@ class DrumMachine:
 			values=[str(i) for i in range(1, MAX_NUMBER_OF_PATTERNS + 1)],
 			command=self.on_pattern_changed)
 		self.pattern_index_widget.grid(row=0, column=2)
-		self.current_pattern_name_widget = ctk.CTkEntry(topbar_frame, fg_color="transparent")
+		self.current_pattern_name_widget = ctk.CTkEntry(topbar_frame, fg_color="transparent", height=16, justify="center")
 		self.current_pattern_name_widget.grid(row=0, column=3, padx=7, pady=2)
 
 		# Display the name
@@ -420,7 +420,7 @@ class DrumMachine:
 
 	def create_left_drum_loader(self):
 		left_frame = ctk.CTkFrame(self.mainFrame, fg_color="transparent")
-		left_frame.grid(row=10, column=0, columnspan=6, sticky="news")
+		left_frame.grid(row=10, column=0, columnspan=6, sticky="nw", pady=(4, 0))
 		open_file_icon = ctk.CTkImage(
 			light_image=Image.open("images/openfile2.png"),
 			dark_image =Image.open("images/openfile2.png"))
@@ -432,21 +432,37 @@ class DrumMachine:
 			open_file_button.grid(row=i, column=0, padx=5, pady=4)
 			self.drum_load_entry_widget[i] = ctk.CTkEntry(left_frame)
 			self.drum_load_entry_widget[i].grid(
-				row=i, column=4, padx=7, pady=4)
+				row=i, column=4, padx=7, pady=(7, 1))
 
 
 	def create_right_button_matrix(self):
-		right_frame = ctk.CTkFrame(self.mainFrame, fg_color="transparent")
-		right_frame.grid(row=10, column=6, sticky="news", padx=15, pady=4)
+		right_frame = ctk.CTkScrollableFrame(self.mainFrame, fg_color="transparent", orientation="horizontal", width=560, height=175)
+		right_frame.grid(row=10, column=6, sticky="nw", padx=(15, 15), pady=(4, 0))
+		# scrollFrame.grid_rowconfigure(0, weight=1)
+		# scrollFrame.grid_columnconfigure(0, weight=1)
+
+		# right_frame = ctk.CTkFrame(scrollFrame, fg_color="transparent")
+		# right_frame.pack() #grid(row=0, column=0, sticky="news", padx=15, pady=4)
 		self.buttons = [[None for x in range(
 			self.find_number_of_columns())] for x in range(MAX_NUMBER_OF_DRUM_SAMPLES)]
+		
+		# Configure rows to stretch equally and eliminate empty floor space
 		for row in range(MAX_NUMBER_OF_DRUM_SAMPLES):
+			#right_frame.rowconfigure(row, weight=10)
 			for col in range(self.find_number_of_columns()):
 				self.buttons[row][col] = ctk.CTkButton(
 					right_frame, command=self.on_button_clicked(row, col), hover_color=HOVER,
 					text="", height=35, width=20)
 				self.buttons[row][col].grid(row=row, column=col, padx=1)
 				self.display_button_color(row, col)
+		
+		"""right_frame.update_idletasks()
+
+		# Get the exact height required by the internal grid and apply it to the container (5 rows * button_height * padding)
+		# + space for the horizontal scrollbar track
+
+		required_height = right_frame._parent_canvas.bbox("all") #[3] + 20
+		right_frame._parent_canvas.configure(scrollregion=required_height)"""
 
 	def create_top_menu(self):
 		self.menu_bar = tk.Menu(self.root)
