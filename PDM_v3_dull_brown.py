@@ -29,6 +29,7 @@ COLOR_2 = '#B3AA8B'
 BUTTON_CLICKED_COLOR = '#FFFDD0'
 BTN_COLOR = COLOR_1
 HOVER = "#D4D9B2"
+BG_SIDEBAR = "#242121"
 
 class MySpinbox(tk.Spinbox):
 	"""
@@ -60,9 +61,11 @@ class DrumMachine:
 		self.drum_load_entry_widget = [None] * MAX_NUMBER_OF_DRUM_SAMPLES
 		self.loop = True
 		self.now_playing = False
-		"""self.current_pattern = IntVar()
-								self.number_of_units = IntVar()
-								self.bpu = IntVar()"""
+		
+		self.sideFrame = ctk.CTkFrame(self.root, width=50, corner_radius=0, fg_color=BG_SIDEBAR)
+		self.sideFrame.pack(side="left", fill="y")
+		# self.sideFrame.pack_propagate(False)
+
 		self.mainFrame = ctk.CTkFrame(self.root, fg_color="transparent")
 		self.mainFrame.pack(expand=True, fill="both")
 		self.init_all_patterns()
@@ -327,6 +330,44 @@ class DrumMachine:
 		self.current_pattern_name_widget.configure(state="readonly")
 
 
+	def create_sidebar(self):
+		logo_label = ctk.CTkLabel(self.sideFrame, text="EXPLOSION", font=ctk.CTkFont(size=20, weight="bold"))
+		logo_label.pack(pady=(20, 30))
+
+		# Sidebar icons
+		self.loadfile_icon = ctk.CTkImage(
+			light_image = Image.open("images/loadFile_icon.png"),
+			dark_image  = Image.open("images/loadFile_icon.png"))
+		self.savefile_icon = ctk.CTkImage(
+			light_image= Image.open("images/saveFile_icon.png"),
+			dark_image= Image.open("images/saveFile_icon.png")
+		)
+		self.about_icon = ctk.CTkImage(
+			light_image = Image.open("images/about_icon.png"),
+			dark_image  = Image.open("images/about_icon.png")
+		)
+		self.exit_icon = ctk.CTkImage(
+			light_image = Image.open("images/exit_icon.png"),
+			dark_image  = Image.open("images/exit_icon.png")
+		)
+
+
+		
+		self.loadfile_btn = ctk.CTkButton(self.sideFrame, text="Load Project", image=self.loadfile_icon, height=7, width=7,
+									fg_color="transparent", anchor="w",command=self.load_project, hover_color=HOVER)
+		self.loadfile_btn.pack(fill="x", padx=10, pady=5)
+
+		self.savefile_btn = ctk.CTkButton(self.sideFrame, text="Save Project", fg_color="transparent", anchor="w",
+									image=self.savefile_icon, width=7, height=7, command=self.save_project, hover_color=HOVER)
+		self.savefile_btn.pack(fill="x", padx=10, pady=5)
+
+		self.about_btn = ctk.CTkButton(self.sideFrame, text="About", fg_color="transparent", anchor="w",
+									image=self.about_icon, width=7, height=7, command=self.show_about, hover_color=HOVER)
+		self.about_btn.pack(fill="x", padx=10, pady=5)
+
+		self.exit_btn = ctk.CTkButton(self.sideFrame, text="Exit", fg_color="transparent", anchor="w",
+									image=self.exit_icon, width=7, height=7, command=self.exit_app, hover_color=HOVER)
+		self.exit_btn.pack(fill="x", padx=10, pady=5)		
 
 
 	def create_top_bar(self):
@@ -516,7 +557,8 @@ Reprogrammed with Customtkinter by Jeremiah Adejo.
 
 
 	def init_gui(self):
-		self.create_top_menu()
+		self.create_sidebar()
+		#self.create_top_menu()
 		self.create_top_bar()
 		self.create_left_drum_loader()
 		self.create_right_button_matrix()
